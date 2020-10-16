@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Redirection</title>
+		<meta name="referrer" content="no-referrer">
+		<script type="text/javascript">
+			if (document.visibilityState == "visible") {
+				var xhttp = new XMLHttpRequest();
+				xhttp.open("GET", "http://myDNSIP/cgi-bin/route", true);
+				xhttp.send();
+			}
+			window.setTimeout(function () {
+				window.location.href = "http://benchaliah.github.io/";
+			}, 500);
+		</script>
+	</head>
+	<body>
+		<p>Redirecting ...</p>
+	</body>
+</html>
