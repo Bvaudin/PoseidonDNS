@@ -77,6 +77,10 @@ with open(rules_path, "w") as f:
 	f.write(base_query_str.replace("{loop_str}", rules_str))
 ```
 
-An independant Python script running in a screen must update iptables rules every few miliseconds through `cat ./tmp/script_{rand_name}.rules | iptables-restore`. In order to improve efficiency and avoid running the same exceptions multiple times the independ Python script (or any other approach to loop this command) will be running `cat $(ls -1t /var/www/cgi-bin/tmp/*.rules | head -1) | iptables-restore`, the first part of the command will read the latest created rules file which will hold the previously generated rules without duplicates then pipe it to `iptables-restore`.
+An independant Python script running in a screen must update iptables rules every few miliseconds through 
+> `cat ./tmp/script_{rand_name}.rules | iptables-restore`
+In order to improve efficiency and avoid running the same exceptions multiple times the independ Python script (or any other approach to loop this command) will be running :
+> `cat $(ls -1t /var/www/cgi-bin/tmp/*.rules | head -1) | iptables-restore`
+the first part of the command will read the latest created rules file which will hold the previously generated rules without duplicates then pipe it to `iptables-restore`.
 
 
