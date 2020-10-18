@@ -33,6 +33,8 @@ $ docker pull benchaliah/poseidondns
 $ docker run -it  --privileged --cap-add=ALL -v /lib/modules:/lib/modules -p 81:80 -p 5353:53 benchaliah/poseidondns
 ```
 
+You can test the server using `dig @dockercontainerIP whateverDomain`, or by setting dhcp in a device (router or otherwise) to `dockercontainerIP`
+
 
 ## Approach
 
