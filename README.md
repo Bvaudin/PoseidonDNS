@@ -1,4 +1,6 @@
-[![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)]() [![Powered by](https://img.shields.io/badge/ubuntu-v16.04-blue.svg)]() [![Docker](https://img.shields.io/badge/DockerImage-v1.0.1-green.svg)](https://hub.docker.com/repository/docker/benchaliah/poseidondns)
+[![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)]() [![Powered by](https://img.shields.io/badge/ubuntu-v16.04-blue.svg)]() [![Docker](https://img.shields.io/badge/DockerImage-v1.0.1-green.svg)](https://hub.docker.com/repository/docker/benchaliah/poseidondns) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 
 ## Disclaimer
 
