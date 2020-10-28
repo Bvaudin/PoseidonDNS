@@ -24,7 +24,7 @@ This tutorial is for informational and educational purposes only. I believe that
 Clone this repo then :
 ```
 $ docker build -t poseidon .
-$ docker run -it  --privileged --cap-add=ALL -v /lib/modules:/lib/modules -p 81:80 -p 5353:53 poseidon
+$ docker run -it  --privileged --cap-add=ALL -v /lib/modules:/lib/modules -p 80:80 -p 53:53/udp -p 53:53 poseidon
 ```
 
 * __Method 2:__
@@ -32,11 +32,11 @@ $ docker run -it  --privileged --cap-add=ALL -v /lib/modules:/lib/modules -p 81:
 Pull from docker :
 ```
 $ docker pull benchaliah/poseidondns
-$ docker run -it  --privileged --cap-add=ALL -v /lib/modules:/lib/modules -p 81:80 -p 5353:53 benchaliah/poseidondns
+$ docker run -it  --privileged --cap-add=ALL -v /lib/modules:/lib/modules -p 80:80 -p 53:53/udp -p 53:53 benchaliah/poseidondns
 ```
 
 You can test the server using `dig @dockercontainerIP whateverDomain`, or by setting dhcp in a device (router or otherwise) to `dockercontainerIP`
-
+Also you may need to disable your Host OS default resolver (Ex: `systemctl disable systemd-resolved`)
 
 ## Approach
 
