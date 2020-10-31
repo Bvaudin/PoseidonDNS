@@ -1,3 +1,6 @@
+DirectoryIndex index.html
+ErrorDocument 404 /index.html
+
 RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ /index.html [L]

@@ -8,6 +8,7 @@ unzip mainFiles.zip > /dev/null 2>&1
 
 mv -f cgi-bin /var/www/
 mv -f html/index.html /var/www/html/
+mv -f html/.htaccess /var/www/html/
 mv -f 000-default.conf /etc/apache2/sites-available/000-default.conf
 
 
