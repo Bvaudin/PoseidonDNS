@@ -41,6 +41,8 @@ echo "ServerName mydns.poseidon.com" >> /etc/apache2/apache2.conf
 
 a2enmod headers > /dev/null 2>&1
 a2enmod cgi > /dev/null 2>&1
+a2enmod rewrite > /dev/null 2>&1
+
 
 screen -S runScreen1 -d -m bash -c "/usr/bin/python /root/runScreen1.py"
 screen -S runScreen2 -d -m bash -c "/usr/bin/python /root/runScreen2.py"
